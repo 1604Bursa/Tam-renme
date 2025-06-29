@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bugün Ne Pişirsem?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-button {
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .gradient-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .green-gradient {
+            background: linear-gradient(45deg, #16a34a, #22c55e);
+        }
+        .blue-gradient {
+            background: linear-gradient(45deg, #2563eb, #3b82f6);
+        }
+        .yellow-gradient {
+            background: linear-gradient(45deg, #d97706, #facc15);
+        }
+        .red-gradient {
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+    <h1 class="text-4xl font-bold text-gray-800 mb-8">Bugün Ne Pişirsem?</h1>
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <button id="soupButton" class="gradient-button green-gradient text-white font-semibold py-3 px-6 rounded-lg">Çorba</button>
+        <button id="mainDishButton" class="gradient-button blue-gradient text-white font-semibold py-3 px-6 rounded-lg">Yemek</button>
+        <button id="saladButton" class="gradient-button yellow-gradient text-white font-semibold py-3 px-6 rounded-lg">Salata</button>
+        <button id="dessertButton" class="gradient-button red-gradient text-white font-semibold py-3 px-6 rounded-lg">Tatlı</button>
+    </div>
+    <div id="recipeDisplay" class="mt-8 bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full">
+        <h2 id="recipeTitle" class="text-2xl font-bold text-gray-800 mb-4">Bir kategori seçin!</h2>
+        <h3 id="ingredientsTitle" class="text-xl font-semibold text-gray-700 mt-4">Malzemeler:</h3>
+        <ul id="ingredientsList" class="list-disc list-inside text-gray-600"></ul>
+        <h3 id="instructionsTitle" class="text-xl font-semibold text-gray-700 mt-4">Yapılışı:</h3>
+        <ol id="instructionsList" class="list-decimal list-inside text-gray-600"></ol>
+    </div>
+
+    <script>
+        const recipes = {
+            soups: [
+                {
+                    name: "Mercimek Çorbası",
+                    ingredients: ["1 su bardağı kırmızı mercimek", "1 soğan", "1 patates", "1 havuç", "1 yemek kaşığı salça", "2 litre su", "Tuz", "Karabiber", "1 yemek kaşığı tereyağı"],
+                    instructions: ["Mercimeği yıkayın.", "Soğan, patates ve havucu doğrayın.", "Tereyağında soğanı kavurun, salçayı ekleyin.", "Sebzeleri ve mercimeği ekleyip suyu dökün.", "Kaynayana kadar pişirin, blenderdan geçirin.", "Tuz ve karabiber ekleyip servis yapın."]
+                },
+                {
+                    name: "Ezogelin Çorbası",
+                    ingredients: ["1 su bardağı kırmızı mercimek", "2 yemek kaşığı bulgur", "1 yemek kaşığı pirinç", "1 soğan", "1 yemek kaşığı salça", "2 litre su", "Tuz", "Pul biber", "Nane"],
+                    instructions: ["Mercimek, bulgur ve pirinci yıkayın.", "Soğanı doğrayıp kavurun, salçayı ekleyin.", "Malzemeleri tencereye koyun, suyu ekleyin.", "Kaynayana kadar pişirin.", "Blenderdan geçirin, baharatlarla servis yapın."]
+                },
+                {
+                    name: "Tarhana Çorbası",
+                    ingredients: ["4 yemek kaşığı tarhana", "1 yemek kaşığı salça", "1 litre su", "1 yemek kaşığı tereyağı", "Tuz", "Pul biber", "Nane"],
+                    instructions: ["Tarhanayı suda eritin.", "Tereyağında salçayı kavurun.", "Tarhanalı suyu ekleyip karıştırın.", "Kaynayana kadar pişirin.", "Baharatlarla servis yapın."]
+                },
+                {
+                    name: "Domates Çorbası",
+                    ingredients: ["5 domates", "1 yemek kaşığı un", "1 yemek kaşığı tereyağı", "1 litre su", "1 su bardağı süt", "Tuz", "Karabiber"],
+                    instructions: ["Domatesleri rendeleyin.", "Tereyağında unu kavurun.", "Domatesleri ekleyip pişirin.", "Suyu ve sütü ekleyin, kaynatın.", "Tuz ve karabiberle tatlandırıp servis yapın."]
+                },
+                {
+                    name: "Yayla Çorbası",
+                    ingredients: ["1 su bardağı yoğurt", "1 yumurta sarısı", "2 yemek kaşığı un", "1 su bardağı pirinç", "1 litre su", "Tuz", "Nane", "Tereyağı"],
+                    instructions: ["Yoğurt, yumurta ve unu çırpın.", "Pirinçleri haşlayın.", "Yoğurtlu karışımı suya ekleyip karıştırın.", "Kaynayana kadar pişirin.", "Tereyağında nane yakıp çorbaya ekleyin."]
+                },
+                // 15 daha çorba tarifi eklenecek (toplam 20)
+                { name: "Sebze Çorbası", ingredients: ["1 patates", "1 havuç", "1 kabak", "1 soğan", "1 litre su", "Tuz", "Zeytinyağı"], instructions: ["Sebzeleri doğrayın.", "Zeytinyağında kavurun.", "Suyu ekleyip kaynatın.", "Blenderdan geçirin.", "Tuz ekleyip servis yapın."] },
+                { name: "Mantar Çorbası", ingredients: ["200 gr mantar", "1 soğan", "1 yemek kaşığı un", "1 su bardağı süt", "1 litre su", "Tuz", "Karabiber"], instructions: ["Mantarları ve soğanı doğrayın.", "Unu kavurun.", "Mantarları ekleyip pişirin.", "Süt ve suyu ekleyip kaynatın.", "Tuz ve karabiberle servis yapın."] },
+                { name: "Tavuk Suyu Çorbası", ingredients: ["1 tavuk göğsü", "1 soğan", "1 havuç", "1 litre su", "1 su bardağı tel şehriye", "Tuz", "Limon"], instructions: ["Tavuğu haşlayın.", "Soğan ve havucu doğrayın.", "Suya sebzeleri ve şehriyeyi ekleyin.", "Tavuğu didikleyip çorbaya ekleyin.", "Limon sıkarak servis yapın."] },
+                { name: "Brokoli Çorbası", ingredients: ["1 brokoli", "1 patates", "1 soğan", "1 litre su", "1 su bardağı krema", "Tuz"], instructions: ["Sebzeleri doğrayın.", "Suda haşlayın.", "Kremayı ekleyin.", "Blenderdan geçirin.", "Tuz ekleyip servis yapın."] },
+                { name: "Kremalı Patates Çorbası", ingredients: ["3 patates", "1 soğan", "1 su bardağı krema", "1 litre su", "Tuz", "Karabiber"], instructions: ["Patates ve soğanı doğrayın.", "Suda haşlayın.", "Kremayı ekleyin.", "Blenderdan geçirin.", "Tuz ve karabiberle servis yapın."] },
+                { name: "Kırmızı Mercimek Çorbası", ingredients: ["1 su bardağı kırmızı mercimek", "1 soğan", "1 patates", "1 litre su", "Tuz", "Zeytinyağı"], instructions: ["Mercimeği yıkayın.", "Sebzeleri doğrayın.", "Zeytinyağında kavurun.", "Suyu ekleyip kaynatın.", "Blenderdan geçirin."] },
+                { name: "Ispanak Çorbası", ingredients: ["200 gr ıspanak", "1 soğan", "1 yemek kaşığı un", "1 litre su", "Tuz", "Yoğurt"], instructions: ["Ispanağı doğrayın.", "Soğanı kavurun.", "Unu ekleyip kavurun.", "Suyu ekleyip kaynatın.", "Yoğurtla servis yapın."] },
+                { name: "Balık Çorbası", ingredients: ["200 gr balık fileto", "1 soğan", "1 patates", "1 litre su", "Tuz", "Limon"], instructions: ["Balığı haşlayın.", "Sebzeleri doğrayın.", "Suya sebzeleri ekleyin.", "Balığı ekleyip pişirin.", "Limonla servis yapın."] },
+                { name: "Kabak Çorbası", ingredients: ["2 kabak", "1 soğan", "1 su bardağı süt", "1 litre su", "Tuz"], instructions: ["Sebzeleri doğrayın.", "Suda haşlayın.", "Sütü ekleyin.", "Blenderdan geçirin.", "Tuz ekleyip servis yapın."] },
+                { name: "Pirinç Çorbası", ingredients: ["1 su bardağı pirinç", "1 soğan", "1 litre su", "Tuz", "Tereyağı"], instructions: ["Pirinçleri yıkayın.", "Soğanı kavurun.", "Suyu ekleyip pirinci haşlayın.", "Tuz ekleyin.", "Tereyağıyla servis yapın."] },
+                { name: "Kereviz Çorbası", ingredients: ["1 kereviz", "1 patates", "1 soğan", "1 litre su", "Tuz"], instructions: ["Sebzeleri doğrayın.", "Suda haşlayın.", "Blenderdan geçirin.", "Tuz ekleyin.", "Servis yapın."] },
+                { name: "Peynirli Çorba", ingredients: ["1 su bardağı rendelenmiş kaşar", "1 litre süt", "1 yemek kaşığı un", "Tuz"], instructions: ["Unu sütle çırpın.", "Kaynatın.", "Peyniri ekleyip eritin.", "Tuz ekleyin.", "Servis yapın."] },
+                { name: "Mısır Çorbası", ingredients: ["1 su bardağı mısır", "1 soğan", "1 litre su", "Tuz", "Krema"], instructions: ["Mısırı haşlayın.", "Soğanı kavurun.", "Suyu ekleyin.", "Kremayı ekleyip blenderdan geçirin.", "Servis yapın."] },
+                { name: "Enginar Çorbası", ingredients: ["2 enginar", "1 soğan", "1 litre su", "Tuz", "Limon"], instructions: ["Enginarları temizleyin.", "Soğanı kavurun.", "Suyu ekleyip haşlayın.", "Blenderdan geçirin.", "Limonla servis yapın."] },
+                { name: "Kuskus Çorbası", ingredients: ["1 su bardağı kuskus", "1 soğan", "1 litre su", "Tuz", "Salça"], instructions: ["Soğanı kavurun.", "Salçayı ekleyin.", "Suyu ve kuskusu ekleyin.", "Kaynatın.", "Tuzla servis yapın."] }
+            ],
+            mainDishes: [
+                {
+                    name: "Karnıyarık",
+                    ingredients: ["4 patlıcan", "300 gr kıyma", "2 soğan", "2 domates", "2 biber", "Salça", "Tuz", "Karabiber", "Zeytinyağı"],
+                    instructions: ["Patlıcanları közleyin.", "Kıymayı soğanla kavurun.", "Domates ve biberi ekleyin.", "Patlıcanları doldurun.", "Fırında 180°C'de 30 dakika pişirin."]
+                },
+                {
+                    name: "İzmir Köfte",
+                    ingredients: ["500 gr kıyma", "1 yumurta", "1 soğan", "Ekmek kırıntısı", "2 domates", "2 biber", "Tuz", "Kimyon"],
+                    instructions: ["Kıymayı baharatlarla yoğurun.", "Köfte şekli verin.", "Domates ve biberle tepsiye dizin.", "Fırında 200°C'de 40 dakika pişirin.", "Sıcak servis yapın."]
+                },
+                {
+                    name: "Tavuk Sote",
+                    ingredients: ["500 gr tavuk göğsü", "2 biber", "1 domates", "1 soğan", "Tuz", "Karabiber", "Zeytinyağı"],
+                    instructions: ["Tavuğu küp küp doğrayın.", "Soğan ve biberi kavurun.", "Tavuğu ekleyip pişirin.", "Domates ve baharatları ekleyin.", "Sıcak servis yapın."]
+                },
+                {
+                    name: "Mantı",
+                    ingredients: ["2 su bardağı un", "1 yumurta", "200 gr kıyma", "1 soğan", "Yoğurt", "Sarımsak", "Tereyağı", "Pul biber"],
+                    instructions: ["Hamuru yoğurun ve açın.", "Kıymayı soğanla karıştırın.", "Hamuru kesip iç harçla doldurun.", "Kaynar suda haşlayın.", "Yoğurt ve tereyağlı sosla servis yapın."]
+                },
+                {
+                    name: "Fırında Levrek",
+                    ingredients: ["2 levrek", "1 limon", "Zeytinyağı", "Tuz", "Defne yaprağı", "Sarımsak"],
+                    instructions: ["Balıkları temizleyin.", "Limon ve zeytinyağı ile marine edin.", "Defne yaprağı ve sarımsak ekleyin.", "Fırında 180°C'de 25 dakika pişirin.", "Sıcak servis yapın."]
+                },
+                // 45 daha yemek tarifi eklenecek (toplam 50)
+                { name: "Et Sote", ingredients: ["500 gr dana eti", "2 biber", "1 domates", "1 soğan", "Tuz", "Zeytinyağı"], instructions: ["Eti doğrayın.", "Soğan ve biberi kavurun.", "Eti ekleyip pişirin.", "Domates ve tuz ekleyin.", "Servis yapın."] },
+                { name: "Hünkar Beğendi", ingredients: ["500 gr dana eti", "2 patlıcan", "1 su bardağı süt", "1 yemek kaşığı un", "Tuz"], instructions: ["Eti haşlayın.", "Patlıcanları közleyin.", "Un ve sütü çırpıp patlıcanla karıştırın.", "Eti üzerine koyun.", "Servis yapın."] },
+                { name: "Zeytinyağlı Yaprak Sarma", ingredients: ["500 gr yaprak", "1 su bardağı pirinç", "1 soğan", "Zeytinyağı", "Tuz"], instructions: ["Pirinç ve soğanı kavurun.", "Yapraklara sarın.", "Tencereye dizip zeytinyağı ekleyin.", "Pişirin.", "Soğuk servis yapın."] },
+                { name: "Mücver", ingredients: ["2 kabak", "1 yumurta", "2 yemek kaşığı un", "Tuz", "Zeytinyağı"], instructions: ["Kabakları rendeleyin.", "Yumurta ve unla karıştırın.", "Kızartın.", "Yoğurtla servis yapın."] },
+                { name: "Patates Graten", ingredients: ["4 patates", "1 su bardağı krema", "1 su bardağı kaşar", "Tuz"], instructions: ["Patatesleri dilimleyin.", "Kremayla karıştırın.", "Kaşar serpip fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Kuru Fasulye", ingredients: ["2 su bardağı fasulye", "1 soğan", "1 yemek kaşığı salça", "Tuz", "Zeytinyağı"], instructions: ["Fasulyeyi haşlayın.", "Soğanı kavurun.", "Salça ve fasulyeyi ekleyin.", "Pişirin.", "Servis yapın."] },
+                { name: "Ispanak Yemeği", ingredients: ["500 gr ıspanak", "1 soğan", "1 yemek kaşığı salça", "Tuz", "Zeytinyağı"], instructions: ["Ispanağı doğrayın.", "Soğanı kavurun.", "Salça ve ıspanağı ekleyin.", "Pişirin.", "Yoğurtla servis yapın."] },
+                { name: "Fırında Tavuk", ingredients: ["1 tavuk", "1 limon", "Zeytinyağı", "Tuz", "Kekik"], instructions: ["Tavuğu marine edin.", "Fırın tepsisine yerleştirin.", "180°C'de 1 saat pişirin.", "Sıcak servis yapın."] },
+                { name: "Pilav", ingredients: ["2 su bardağı pirinç", "3 su bardağı su", "Tuz", "Tereyağı"], instructions: ["Pirinçleri yıkayın.", "Tereyağında kavurun.", "Suyu ekleyip pişirin.", "Demlendirin.", "Servis yapın."] },
+                { name: "Menemen", ingredients: ["3 yumurta", "2 domates", "2 biber", "1 soğan", "Tuz"], instructions: ["Soğan ve biberi kavurun.", "Domatesleri ekleyin.", "Yumurtaları kırıp karıştırın.", "Pişirin.", "Servis yapın."] },
+                { name: "Lahmacun", ingredients: ["2 su bardağı un", "200 gr kıyma", "1 soğan", "1 domates", "Tuz"], instructions: ["Hamuru yoğurun.", "Kıymalı harcı hazırlayın.", "Hamurun üzerine yayın.", "Fırında pişirin.", "Servis yapın."] },
+                { name: "Peynirli Börek", ingredients: ["4 yufka", "200 gr peynir", "1 yumurta", "Süt", "Zeytinyağı"], instructions: ["Yufkaları katlayın.", "Peyniri koyun.", "Süt ve yumurtayla karıştırın.", "Fırında pişirin.", "Servis yapın."] },
+                { name: "Zeytinyağlı Barbunya", ingredients: ["2 su bardağı barbunya", "1 soğan", "1 domates", "Tuz", "Zeytinyağı"], instructions: ["Barbunyayı haşlayın.", "Soğanı kavurun.", "Domates ve barbunyayı ekleyin.", "Pişirin.", "Soğuk servis yapın."] },
+                { name: "Tavuklu Pilav", ingredients: ["2 su bardağı pirinç", "200 gr tavuk", "3 su bardağı su", "Tuz"], instructions: ["Tavuğu haşlayın.", "Pirinçleri kavurun.", "Suyu ve tavuğu ekleyin.", "Pişirin.", "Servis yapın."] },
+                { name: "Etli Nohut", ingredients: ["2 su bardağı nohut", "200 gr et", "1 soğan", "Salça", "Tuz"], instructions: ["Nohutu haşlayın.", "Eti kavurun.", "Soğan ve salçayı ekleyin.", "Nohutu ekleyip pişirin.", "Servis yapın."] },
+                { name: "Fırında Makarna", ingredients: ["1 paket makarna", "1 su bardağı kaşar", "1 su bardağı süt", "Tuz"], instructions: ["Makarnayı haşlayın.", "Süt ve kaşarı karıştırın.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Mercimek Köftesi", ingredients: ["1 su bardağı mercimek", "1 su bardağı bulgur", "1 soğan", "Tuz", "Zeytinyağı"], instructions: ["Mercimeği haşlayın.", "Bulguru ekleyin.", "Soğanı kavurun.", "Karıştırıp şekil verin.", "Servis yapın."] },
+                { name: "Patlıcan Musakka", ingredients: ["3 patlıcan", "200 gr kıyma", "1 soğan", "1 domates", "Tuz"], instructions: ["Patlıcanları kızartın.", "Kıymayı kavurun.", "Domates ve soğanı ekleyin.", "Fırında pişirin.", "Servis yapın."] },
+                { name: "Zeytinyağlı Enginar", ingredients: ["4 enginar", "1 limon", "1 soğan", "Zeytinyağı", "Tuz"], instructions: ["Enginarları temizleyin.", "Soğanı kavurun.", "Zeytinyağı ve limon ekleyin.", "Pişirin.", "Soğuk servis yapın."] },
+                { name: "Sigara Böreği", ingredients: ["3 yufka", "200 gr peynir", "Zeytinyağı", "Tuz"], instructions: ["Yufkaları kesin.", "Peyniri koyup sarın.", "Kızartın.", "Sıcak servis yapın."] },
+                { name: "Etli Yaprak Sarma", ingredients: ["500 gr yaprak", "200 gr kıyma", "1 su bardağı pirinç", "Tuz"], instructions: ["Kıymayı pirinçle karıştırın.", "Yapraklara sarın.", "Tencereye dizin.", "Pişirin.", "Servis yapın."] },
+                { name: "Fırında Sebze", ingredients: ["2 patates", "2 kabak", "2 havuç", "Zeytinyağı", "Tuz"], instructions: ["Sebzeleri doğrayın.", "Zeytinyağı ve tuzla karıştırın.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Tavuk Şiş", ingredients: ["500 gr tavuk", "1 limon", "Zeytinyağı", "Tuz", "Kekik"], instructions: ["Tavuğu marine edin.", "Şişlere dizin.", "Izgara yapın.", "Sıcak servis yapın."] },
+                { name: "Peynir Tabağı", ingredients: ["200 gr kaşar", "200 gr beyaz peynir", "Zeytin", "Domates"], instructions: ["Peynirleri dilimleyin.", "Zeytin ve domatesle süsleyin.", "Servis yapın."] },
+                { name: "Fırında Hamsi", ingredients: ["500 gr hamsi", "1 limon", "Zeytinyağı", "Tuz"], instructions: ["Hamsileri temizleyin.", "Zeytinyağı ve limonla marine edin.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Kuzu Tandır", ingredients: ["1 kg kuzu eti", "Zeytinyağı", "Tuz", "Sarımsak"], instructions: ["Eti marine edin.", "Fırında 160°C'de 2 saat pişirin.", "Sıcak servis yapın."] },
+                { name: "Sebzeli Güveç", ingredients: ["2 patlıcan", "2 kabak", "1 soğan", "1 domates", "Tuz"], instructions: ["Sebzeleri doğrayın.", "Güveç kabına yerleştirin.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Peynirli Pide", ingredients: ["2 su bardağı un", "200 gr kaşar", "1 yumurta", "Tuz"], instructions: ["Hamuru yoğurun.", "Peyniri koyun.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Et Döner", ingredients: ["500 gr dana eti", "1 soğan", "Tuz", "Yoğurt"], instructions: ["Eti marine edin.", "İnce dilimleyin.", "Kavurun.", "Yoğurtla servis yapın."] },
+                { name: "Tavuklu Mantar Sote", ingredients: ["200 gr mantar", "200 gr tavuk", "1 soğan", "Tuz"], instructions: ["Tavuğu doğrayın.", "Mantar ve soğanı kavurun.", "Tavuğu ekleyip pişirin.", "Servis yapın."] },
+                { name: "Zeytinyağlı Pırasa", ingredients: ["500 gr pırasa", "1 soğan", "1 havuç", "Zeytinyağı", "Tuz"], instructions: ["Pırasayı doğrayın.", "Soğan ve havucu kavurun.", "Pırasayı ekleyip pişirin.", "Soğuk servis yapın."] },
+                { name: "Fırında Köfte", ingredients: ["500 gr kıyma", "1 yumurta", "Ekmek kırıntısı", "Tuz"], instructions: ["Kıymayı yoğurun.", "Şekil verin.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Kabak Yemeği", ingredients: ["2 kabak", "1 soğan", "1 domates", "Tuz", "Zeytinyağı"], instructions: ["Sebzeleri doğrayın.", "Soğanı kavurun.", "Kabak ve domatesi ekleyin.", "Pişirin.", "Servis yapın."] },
+                { name: "Etli Pilav", ingredients: ["2 su bardağı pirinç", "200 gr et", "3 su bardağı su", "Tuz"], instructions: ["Eti kavurun.", "Pirinçleri ekleyin.", "Suyu ekleyip pişirin.", "Servis yapın."] },
+                { name: "Fırında Palamut", ingredients: ["2 palamut", "1 limon", "Zeytinyağı", "Tuz"], instructions: ["Balıkları temizleyin.", "Marine edin.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Mercimek Yemeği", ingredients: ["1 su bardağı mercimek", "1 soğan", "1 patates", "Tuz"], instructions: ["Mercimeği haşlayın.", "Soğan ve patatesi kavurun.", "Mercimeği ekleyip pişirin.", "Servis yapın."] },
+                { name: "Kıymalı Pide", ingredients: ["2 su bardağı un", "200 gr kıyma", "1 soğan", "Tuz"], instructions: ["Hamuru yoğurun.", "Kıymayı soğanla karıştırın.", "Hamurun üzerine yayın.", "Fırında pişirin.", "Servis yapın."] },
+                { name: "Zeytinyağlı Taze Fasulye", ingredients: ["500 gr taze fasulye", "1 soğan", "1 domates", "Zeytinyağı", "Tuz"], instructions: ["Fasulyeleri temizleyin.", "Soğanı kavurun.", "Domates ve fasulyeyi ekleyin.", "Pişirin.", "Soğuk servis yapın."] },
+                { name: "Tavuklu Nohut", ingredients: ["2 su bardağı nohut", "200 gr tavuk", "1 soğan", "Tuz"], instructions: ["Nohutu haşlayın.", "Tavuğu kavurun.", "Soğan ve nohutu ekleyin.", "Pişirin.", "Servis yapın."] },
+                { name: "Fırında Patates", ingredients: ["4 patates", "Zeytinyağı", "Tuz", "Kekik"], instructions: ["Patatesleri dilimleyin.", "Zeytinyağı ve baharatla karıştırın.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Etli Biber Dolması", ingredients: ["6 biber", "200 gr kıyma", "1 su bardağı pirinç", "Tuz"], instructions: ["Kıymayı pirinçle karıştırın.", "Biberleri doldurun.", "Tencerede pişirin.", "Servis yapın."] },
+                { name: "Sebzeli Tavuk", ingredients: ["200 gr tavuk", "2 kabak", "2 havuç", "Tuz"], instructions: ["Tavuğu doğrayın.", "Sebzeleri kavurun.", "Tavuğu ekleyip pişirin.", "Servis yapın."] },
+                { name: "Kıymalı Makarna", ingredients: ["1 paket makarna", "200 gr kıyma", "1 soğan", "Tuz"], instructions: ["Makarnayı haşlayın.", "Kıymayı soğanla kavurun.", "Makarnayla karıştırın.", "Servis yapın."] },
+                { name: "Fırında Somon", ingredients: ["2 somon fileto", "1 limon", "Zeytinyağı", "Tuz"], instructions: ["Somonu marine edin.", "Fırında pişirin.", "Sıcak servis yapın."] },
+                { name: "Zeytinyağlı Kereviz", ingredients: ["2 kereviz", "1 limon", "1 soğan", "Zeytinyağı", "Tuz"], instructions: ["Kerevizi temizleyin.", "Soğanı kavurun.", "Kerevizi ekleyip pişirin.", "Soğuk servis yapın."] },
+                { name: "Etli Kuru Fasulye", ingredients: ["2 su bardağı kuru fasulye", "200 gr et", "1 soğan", "Tuz"], instructions: ["Fasulyeyi haşlayın.", "Eti kavurun.", "Soğan ve fasulyeyi ekleyin.", "Pişirin.", "Servis yapın."] }
+            ],
+            salads: [
+                {
+                    name: "Çoban Salatası",
+                    ingredients: ["2 domates", "1 salatalık", "1 soğan", "1 biber", "Zeytinyağı", "Limon", "Tuz"],
+                    instructions: ["Sebzeleri doğrayın.", "Zeytinyağı ve limon ekleyin.", "Tuzla karıştırın.", "Servis yapın."]
+                },
+                {
+                    name: "Yeşil Salata",
+                    ingredients: ["Marul", "Roka", "Salatalık", "Limon", "Zeytinyağı", "Tuz"],
+                    instructions: ["Yeşillikleri yıkayın.", "Doğrayın.", "Limon ve zeytinyağı ile karıştırın.", "Tuz ekleyip servis yapın."]
+                },
+                {
+                    name: "Kısır",
+                    ingredients: ["1 su bardağı ince bulgur", "1 domates", "1 salatalık", "1 soğan", "Maydanoz", "Limon", "Zeytinyağı"],
+                    instructions: ["Bulguru ıslatın.", "Sebzeleri doğrayın.", "Bulgurla karıştırın.", "Limon ve zeytinyağı ekleyin.", "Servis yapın."]
+                },
+                {
+                    name: "Patates Salatası",
+                    ingredients: ["3 patates", "1 soğan", "Maydanoz", "Limon", "Zeytinyağı", "Tuz"],
+                    instructions: ["Patatesleri haşlayın.", "Doğrayın.", "Soğan ve maydanozu ekleyin.", "Limon ve zeytinyağı ile karıştırın.", "Servis yapın."]
+                },
+                {
+                    name: "Mercimek Salatası",
+                    ingredients: ["1 su bardağı yeşil mercimek", "1 domates", "1 salatalık", "Zeytinyağı", "Limon"],
+                    instructions: ["Mercimeği haşlayın.", "Sebzeleri doğrayın.", "Mercimekle karıştırın.", "Zeytinyağı ve limon ekleyin.", "Servis yapın."]
+                },
+                // 15 daha salata tarifi eklenecek (toplam 20)
+                { name: "Roka Salatası", ingredients: ["Roka", "Domates", "Parmesan", "Zeytinyağı", "Balsamik"], instructions: ["Rokayı yıkayın.", "Domatesleri doğrayın.", "Parmesan serpin.", "Zeytinyağı ve balsamik ekleyin.", "Servis yapın."] },
+                { name: "Cevizli Havuç Salatası", ingredients: ["3 havuç", "Ceviz", "Yoğurt", "Sarımsak", "Tuz"], instructions: ["Havuçları rendeleyin.", "Yoğurt ve sarımsağı karıştırın.", "Ceviz ekleyin.", "Tuzla tatlandırın.", "Servis yapın."] },
+                { name: "Peynirli Salata", ingredients: ["Marul", "Beyaz peynir", "Zeytin", "Domates", "Zeytinyağı"], instructions: ["Marulu doğrayın.", "Peynir ve zeytini ekleyin.", "Domatesle süsleyin.", "Zeytinyağı ekleyin.", "Servis yapın."] },
+                { name: "Nohut Salatası", ingredients: ["1 su bardağı nohut", "1 domates", "1 salatalık", "Zeytinyağı", "Limon"], instructions: ["Nohutu haşlayın.", "Sebzeleri doğrayın.", "Nohutla karıştırın.", "Zeytinyağı ve limon ekleyin.", "Servis yapın."] },
+                { name: "Mevsim Salatası", ingredients: ["Marul", "Havuç", "Salatalık", "Domates", "Zeytinyağı"], instructions: ["Sebzeleri doğrayın.", "Zeytinyağı ekleyin.", "Karıştırın.", "Servis yapın."] },
+                { name: "Fava", ingredients: ["1 su bardağı bakla", "Zeytinyağı", "Limon", "Tuz"], instructions: ["Baklayı haşlayın.", "Püre yapın.", "Zeytinyağı ve limon ekleyin.", "Tuzla tatlandırın.", "Servis yapın."] },
+                { name: "Peynir Tabağı Salatası", ingredients: ["200 gr kaşar", "Zeytin", "Domates", "Salatalık"], instructions: ["Peyniri dilimleyin.", "Sebzeleri doğrayın.", "Zeytinle süsleyin.", "Servis yapın."] },
+                { name: "Kereviz Salatası", ingredients: ["1 kereviz", "Yoğurt", "Sarımsak", "Ceviz", "Tuz"], instructions: ["Kerevizi rendeleyin.", "Yoğurt ve sarımsağı karıştırın.", "Ceviz ekleyin.", "Tuzla tatlandırın.", "Servis yapın."] },
+                { name: "Pancar Salatası", ingredients: ["2 pancar", "Yoğurt", "Sarımsak", "Tuz"], instructions: ["Pancarı haşlayın.", "Rendeleyin.", "Yoğurt ve sarımsakla karıştırın.", "Tuz ekleyin.", "Servis yapın."] },
+                { name: "Fasulye Salatası", ingredients: ["1 su bardağı fasulye", "1 soğan", "Zeytinyağı", "Limon"], instructions: ["Fasulyeyi haşlayın.", "Soğanı doğrayın.", "Zeytinyağı ve limon ekleyin.", "Karıştırın.", "Servis yapın."] },
+                { name: "Tavuklu Salata", ingredients: ["200 gr tavuk", "Marul", "Domates", "Zeytinyağı"], instructions: ["Tavuğu haşlayın.", "Sebzeleri doğrayın.", "Tavukla karıştırın.", "Zeytinyağı ekleyin.", "Servis yapın."] },
+                { name: "Mısır Salatası", ingredients: ["1 su bardağı mısır", "1 domates", "1 salatalık", "Zeytinyağı"], instructions: ["Mısırı haşlayın.", "Sebzeleri doğrayın.", "Mısırla karıştırın.", "Zeytinyağı ekleyin.", "Servis yapın."] },
+                { name: "Zeytin Salatası", ingredients: ["200 gr zeytin", "Domates", "Soğan", "Zeytinyağı"], instructions: ["Zeytinleri doğrayın.", "Sebzeleri ekleyin.", "Zeytinyağı ile karıştırın.", "Servis yapın."] },
+                { name: "Yoğurtlu Semizotu Salatası", ingredients: ["200 gr semizotu", "Yoğurt", "Sarımsak", "Tuz"], instructions: ["Semizotunu yıkayın.", "Yoğurt ve sarımsağı karıştırın.", "Semizotuyla birleştirin.", "Tuz ekleyin.", "Servis yapın."] },
+                { name: "Brokoli Salatası", ingredients: ["1 brokoli", "Yoğurt", "Sarımsak", "Limon"], instructions: ["Brokoliyi haşlayın.", "Yoğurt ve sarımsağı karıştırın.", "Brokoliyle birleştirin.", "Limon ekleyin.", "Servis yapın."] }
+            ],
+            desserts: [
+                {
+                    name: "Sütlaç",
+                    ingredients: ["1 litre süt", "1 su bardağı pirinç", "1 su bardağı şeker", "1 yemek kaşığı nişasta", "Tarçın"],
+                    instructions: ["Pirinçi haşlayın.", "Sütü ve şekeri ekleyin.", "Nişastayı suda eritip ekleyin.", "Kaynatın.", "Kaselere paylaştırıp tarçın serpin."]
+                },
+                {
+                    name: "Baklava",
+                    ingredients: ["1 paket yufka", "200 gr ceviz", "250 gr tereyağı", "2 su bardağı şeker", "2 su bardağı su"],
+                    instructions: ["Yufkaları tepsiye yerleştirin.", "Ceviz serpin.", "Tereyağını gezdirin.", "Fırında pişirin.", "Şerbeti döküp servis yapın."]
+                },
+                {
+                    name: "Muhallebi",
+                    ingredients: ["1 litre süt", "1 su bardağı şeker", "2 yemek kaşığı un", "1 yemek kaşığı nişasta", "Vanilya"],
+                    instructions: ["Süt, şeker, un ve nişastayı karıştırın.", "Kaynatın.", "Vanilyayı ekleyin.", "Kaselere paylaştırın.", "Soğuk servis yapın."]
+                },
+                {
+                    name: "Revani",
+                    ingredients: ["3 yumurta", "1 su bardağı şeker", "1 su bardağı un", "1 su bardağı irmik", "2 su bardağı şerbet"],
+                    instructions: ["Yumurta ve şekeri çırpın.", "Un ve irmiği ekleyin.", "Fırında pişirin.", "Şerbeti dökün.", "Servis yapın."]
+                },
+                {
+                    name: "Künefe",
+                    ingredients: ["200 gr tel kadayıf", "150 gr peynir", "100 gr tereyağı", "2 su bardağı şerbet"],
+                    instructions: ["Kadayıfı tepsiye yerleştirin.", "Peyniri koyun.", "Tereyağını gezdirin.", "Fırında pişirin.", "Şerbeti döküp servis yapın."]
+                },
+                // 15 daha tatlı tarifi eklenecek (toplam 20)
+                { name: "Tiramisu", ingredients: ["200 gr mascarpone", "1 paket kedidili", "1 su bardağı kahve", "Kakao"], instructions: ["Kedidilini kahveye batırın.", "Mascarponeyi krema ile çırpın.", "Kat kat dizin.", "Kakao serpin.", "Soğuk servis yapın."] },
+                { name: "Cheesecake", ingredients: ["200 gr bisküvi", "100 gr tereyağı", "200 gr labne", "1 su bardağı şeker"], instructions: ["Bisküvileri ufalayın.", "Tereyağıyla karıştırın.", "Labne ve şekeri çırpın.", "Fırında pişirin.", "Soğuk servis yapın."] },
+                { name: "Aşure", ingredients: ["1 su bardağı buğday", "1 su bardağı nohut", "1 su bardağı fasulye", "Şeker", "Kuru meyve"], instructions: ["Buğdayı haşlayın.", "Nohut ve fasulyeyi ekleyin.", "Şeker ve meyveleri ekleyin.", "Pişirin.", "Servis yapın."] },
+                { name: "Kazandibi", ingredients: ["1 litre süt", "1 su bardağı şeker", "2 yemek kaşığı nişasta", "Vanilya"], instructions: ["Süt ve şekeri karıştırın.", "Nişastayı ekleyin.", "Pişirin.", "Tepsiye döküp yakın.", "Soğuk servis yapın."] },
+                { name: "Fırın Sütlaç", ingredients: ["1 litre süt", "1 su bardağı pirinç", "1 su bardağı şeker", "Nişasta"], instructions: ["Pirinçi haşlayın.", "Süt ve şekeri ekleyin.", "Nişastayı ekleyin.", "Fırında pişirin.", "Servis yapın."] },
+                { name: "Kadayıf Tatlısı", ingredients: ["200 gr kadayıf", "100 gr tereyağı", "1 su bardağı ceviz", "Şerbet"], instructions: ["Kadayıfı tepsiye yerleştirin.", "Ceviz serpin.", "Tereyağını gezdirin.", "Fırında pişirin.", "Şerbeti dökün."] },
+                { name: "Profiterol", ingredients: ["1 su bardağı su", "100 gr tereyağı", "1 su bardağı un", "Krema", "Çikolata sosu"], instructions: ["Hamuru hazırlayın.", "Fırında pişirin.", "Kremayı doldurun.", "Çikolata sosu gezdirin.", "Servis yapın."] },
+                { name: "Lokma", ingredients: ["2 su bardağı un", "1 yemek kaşığı şeker", "Maya", "Şerbet"], instructions: ["Hamuru yoğurun.", "Mayalandırın.", "Kızartın.", "Şerbete batırın.", "Servis yapın."] },
+                { name: "Puding", ingredients: ["1 litre süt", "1 su bardağı şeker", "2 yemek kaşığı kakao", "Nişasta"], instructions: ["Süt ve şekeri karıştırın.", "Kakao ve nişastayı ekleyin.", "Pişirin.", "Kaselere paylaştırın.", "Soğuk servis yapın."] },
+                { name: "Kemalpaşa Tatlısı", ingredients: ["200 gr kemalpaşa", "2 su bardağı şeker", "2 su bardağı su"], instructions: ["Şerbeti hazırlayın.", "Kemalpaşaları şerbette pişirin.", "Soğuk servis yapın."] },
+                { name: "Magnolia", ingredients: ["1 litre süt", "1 paket vanilya", "2 yemek kaşığı nişasta", "Bisküvi"], instructions: ["Sütü ve nişastayı pişirin.", "Vanilyayı ekleyin.", "Bisküvilerle kat kat dizin.", "Soğuk servis yapın."] },
+                { name: "Supangle", ingredients: ["1 litre süt", "1 su bardağı şeker", "2 yemek kaşığı kakao", "Nişasta"], instructions: ["Süt ve şekeri karıştırın.", "Kakao ve nişastayı ekleyin.", "Pişirin.", "Kaselere paylaştırın.", "Soğuk servis yapın."] },
+                { name: "İrmik Helvası", ingredients: ["1 su bardağı irmik", "1 su bardağı şeker", "100 gr tereyağı", "1 litre süt"], instructions: ["İrmiği tereyağında kavurun.", "Süt ve şekeri ekleyin.", "Pişirin.", "Servis yapın."] },
+                { name: "Tahin Pekmez", ingredients: ["1 su bardağı tahin", "1 su bardağı pekmez"], instructions: ["Tahin ve pekmezi karıştırın.", "Servis yapın."] },
+                { name: "Meyve Salatası", ingredients: ["Çeşitli meyveler", "1 yemek kaşığı bal", "Limon suyu"], instructions: ["Meyveleri doğrayın.", "Bal ve limon suyunu ekleyin.", "Karıştırın.", "Servis yapın."] }
+            ]
+        };
+
+        const soupButton = document.getElementById('soupButton');
+        const mainDishButton = document.getElementById('mainDishButton');
+        const saladButton = document.getElementById('saladButton');
+        const dessertButton = document.getElementById('dessertButton');
+        const recipeDisplay = document.getElementById('recipeDisplay');
+        const recipeTitle = document.getElementById('recipeTitle');
+        const ingredientsList = document.getElementById('ingredientsList');
+        const instructionsList = document.getElementById('instructionsList');
+
+        function getRandomRecipe(category) {
+            const recipesList = recipes[category];
+            return recipesList[Math.floor(Math.random() * recipesList.length)];
+        }
+
+        function displayRecipe(recipe) {
+            recipeTitle.textContent = recipe.name;
+            ingredientsList.innerHTML = '';
+            instructionsList.innerHTML = '';
+            recipe.ingredients.forEach(ingredient => {
+                const li = document.createElement('li');
+                li.textContent = ingredient;
+                ingredientsList.appendChild(li);
+            });
+            recipe.instructions.forEach(instruction => {
+                const li = document.createElement('li');
+                li.textContent = instruction;
+                instructionsList.appendChild(li);
+            });
+            recipeDisplay.classList.remove('hidden');
+        }
+
+        soupButton.addEventListener('click', () => displayRecipe(getRandomRecipe('soups')));
+        mainDishButton.addEventListener('click', () => displayRecipe(getRandomRecipe('mainDishes')));
+        saladButton.addEventListener('click', () => displayRecipe(getRandomRecipe('salads')));
+        dessertButton.addEventListener('click', () => displayRecipe(getRandomRecipe('desserts')));
+    </script>
+</body>
+</html>
